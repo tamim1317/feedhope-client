@@ -1,28 +1,91 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../firebase.config";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut,
+    GoogleAuthProvider,
+    signInWithPopup 
+} from 'firebase/auth'; 
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+const auth = getAuth();
+const googleProvider = new GoogleAuthProvider();
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [firebaseToken, setFirebaseToken] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
-    return unsubscribe;
-  }, []);
+    // --- Authentication Functions ---
+    
+    const registerUser = (email, password) => {
+        setLoading(true);
+        return createUserWithEmailAndPassword(auth, email, password);
+    };
 
-  const logout = () => signOut(auth);
+    const loginUser = (email, password) => {
+        setLoading(true);
+        return signInWithEmailAndPassword(auth, email, password);
+    };
 
-  return (
-    <AuthContext.Provider value={{ currentUser, logout }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+    const googleLogin = () => {
+        setLoading(true);
+        return signInWithPopup(auth, googleProvider);
+    };
+
+    const logoutUser = () => {
+        setLoading(true);
+        return signOut(auth);
+    };
+
+    // --- Token Management ---
+
+    useEffect(() => {
+        // login, logout, reload
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                try {
+                    // Fetch ID token
+                    const token = await currentUser.getIdToken(true);
+                    setFirebaseToken(token);
+
+                } catch (error) {
+                    console.error("Failed to get Firebase token:", error);
+                    setFirebaseToken(null);
+                }
+            } else {
+                setFirebaseToken(null);
+            }
+            setLoading(false);
+        });
+
+        // Cleanup subscription
+        return () => unsubscribe();
+    }, []);
+
+    // --- Context Value ---
+
+    const authInfo = {
+        user,
+        loading,
+        firebaseToken, // Export the token for API service
+        registerUser,
+        loginUser,
+        googleLogin,
+        logoutUser
+    };
+
+    return (
+        <AuthContext.Provider value={authInfo}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// Custom hook to use AuthContext
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
