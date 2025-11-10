@@ -1,12 +1,13 @@
-import './App.css'
+import React, { useEffect } from "react";
+import { auth } from "./firebase.config";
+
 
 function App() {
+  useEffect(() => {
+    console.log("Firebase Auth:", auth);
+  }, []);
 
-  return (
-    <>
-      <h1>My Projects Client Site</h1>
-    </>
-  )
+  return <div>Check the console for Firebase Auth object</div>;
 }
 
-export default App
+export default App;
