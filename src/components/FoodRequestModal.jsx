@@ -1,4 +1,3 @@
-// src/components/FoodRequestModal.jsx
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
@@ -55,3 +54,5 @@ const FoodRequestModal = ({ food, onClose, onRequest }) => {
 };
 
 export default FoodRequestModal;
+
+
