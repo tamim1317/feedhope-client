@@ -1,39 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import FoodService from '../services/FoodService';
-import { Link } from 'react-router-dom'; 
+import React, { useState, useEffect } from "react";
+import LoadingSpinner from "../components/LoadingSpinner"; // Optional spinner
 
-function FoodList() {
-    const [foods, setFoods] = useState([]);
+const FoodsList = () => {
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const res = await fetch("/foods.json");
+        if (!res.ok) throw new Error("Failed to load JSON");
+        const data = await res.json();
+        setFoods(data);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFoods();
+  }, []);
+
+  if (loading) return <LoadingSpinner />; // Show spinner while loading
+  if (error)
     return (
-        <div className="food-list-container">
-            <h2>Your Food Inventory</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Quantity</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {foods.map(food => (
-                        <tr key={food.id}>
-                            <td>{food.name}</td>
-                            <td>{food.quantity}</td>
-                            <td>
-                                {/* Edit Link */}
-                                <Link to={`/foods/update/${food.id}`} 
-                                className="edit-button">
-                                  Edit
-                                </Link>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+      <p className="text-center text-red-500 py-10 font-semibold">
+        {error}
+      </p>
     );
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-teal-700">🍽️ Available Foods</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {foods.map((food) => (
+          <div
+            key={food.id}
+            className="border rounded-2xl p-4 shadow hover:shadow-lg transition"
+          >
+            <h3 className="font-semibold text-xl mb-2">{food.name}</h3>
+            <p className="text-gray-600 mb-1">
+              <span className="font-semibold">Quantity:</span> {food.quantity}
+            </p>
+            <p className="text-gray-700">{food.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-export default FoodList;
+export default FoodsList;

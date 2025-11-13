@@ -1,91 +1,116 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { 
-    getAuth, 
-    onAuthStateChanged, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signOut,
-    GoogleAuthProvider,
-    signInWithPopup 
-} from 'firebase/auth'; 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail
+} from "firebase/auth";
+import { toast } from "react-toastify";
+import app from "../firebase.config";
 
-const AuthContext = createContext(null);
-const auth = getAuth();
-const googleProvider = new GoogleAuthProvider();
+const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [firebaseToken, setFirebaseToken] = useState(null);
+  const auth = getAuth(app);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Wait for auth initialization
 
-    // --- Authentication Functions ---
-    
-    const registerUser = (email, password) => {
-        setLoading(true);
-        return createUserWithEmailAndPassword(auth, email, password);
-    };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
-    const loginUser = (email, password) => {
-        setLoading(true);
-        return signInWithEmailAndPassword(auth, email, password);
-    };
+  const showToast = (message, type = "info") => toast[type](message);
 
-    const googleLogin = () => {
-        setLoading(true);
-        return signInWithPopup(auth, googleProvider);
-    };
+  // LOGIN
+  const loginUser = async (email, password) => {
+    try {
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      showToast("Login successful!", "success");
+      return res;
+    } catch (err) {
+      showToast(err.message, "error");
+      throw err;
+    }
+  };
 
-    const logoutUser = () => {
-        setLoading(true);
-        return signOut(auth);
-    };
+  // REGISTER
+  const registerUser = async (email, password, displayName, photoURL) => {
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, { displayName, photoURL });
+      }
+      showToast("Registration successful!", "success");
+      return res;
+    } catch (err) {
+      showToast(err.message, "error");
+      throw err;
+    }
+  };
 
-    // --- Token Management ---
+  // LOGOUT
+  const logoutUser = async () => {
+    try {
+      await signOut(auth);
+      showToast("Logged out successfully!", "success");
+    } catch (err) {
+      showToast("Logout failed", "error");
+      throw err;
+    }
+  };
 
-    useEffect(() => {
-        // login, logout, reload
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) {
-                try {
-                    // Fetch ID token
-                    const token = await currentUser.getIdToken(true);
-                    setFirebaseToken(token);
+  // GOOGLE LOGIN
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      showToast("Logged in with Google!", "success");
+    } catch (err) {
+      showToast(err.message, "error");
+      throw err;
+    }
+  };
 
-                } catch (error) {
-                    console.error("Failed to get Firebase token:", error);
-                    setFirebaseToken(null);
-                }
-            } else {
-                setFirebaseToken(null);
-            }
-            setLoading(false);
-        });
+  // PASSWORD RESET
+  const resetPassword = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast("Password reset email sent!", "success");
+    } catch (err) {
+      showToast(err.message, "error");
+      throw err;
+    }
+  };
 
-        // Cleanup subscription
-        return () => unsubscribe();
-    }, []);
+  // GET FIREBASE TOKEN for API
+  const getToken = async () => {
+    if (!user) return null;
+    return await user.getIdToken();
+  };
 
-    // --- Context Value ---
-
-    const authInfo = {
-        user,
-        loading,
-        firebaseToken, // Export the token for API service
-        registerUser,
-        loginUser,
-        googleLogin,
-        logoutUser
-    };
-
-    return (
-        <AuthContext.Provider value={authInfo}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
-
-// Custom hook to use AuthContext
-export const useAuth = () => {
-    return useContext(AuthContext);
+  return (
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      loginUser,
+      registerUser,
+      logoutUser,
+      signInWithGoogle,
+      resetPassword,
+      showToast,
+      getToken
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

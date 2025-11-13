@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "name": "Grilled Chicken Salad",
+    "description": "A healthy mix of grilled chicken, lettuce, tomato, and vinaigrette dressing.",
+    "price": 250,
+    "image": "https://i.ibb.co.com/TxPMRTL1/grilled-chicken-salad-4.jpg",
+    "category": "Salad",
+    "featured": true
+  },
+  {
+    "id": 2,
+    "name": "Beef Burger",
+    "description": "Juicy beef patty with cheese, lettuce, tomato, and house special sauce.",
+    "price": 320,
+    "image": "https://i.ibb.co.com/Ndc0h6jv/istockphoto-617364554-612x612.jpg",
+    "category": "Fast Food",
+    "featured": true
+  },
+  {
+    "id": 3,
+    "name": "Margherita Pizza",
+    "description": "Classic Italian pizza topped with tomato sauce, mozzarella, and basil.",
+    "price": 480,
+    "image": "https://i.ibb.co.com/HTNCLZtr/Margherita-Pizza-093.webp",
+    "category": "Pizza",
+    "featured": true
+  },
+  {
+    "id": 4,
+    "name": "Pasta Alfredo",
+    "description": "Creamy Alfredo pasta with parmesan cheese and grilled chicken.",
+    "price": 370,
+    "image": "https://i.ibb.co.com/C32FxgHs/plate-fettuccine-alfredo-with-fresh-parsley-9975-124881.jpg",
+    "category": "Pasta",
+    "featured": false
+  },
+  {
+    "id": 5,
+    "name": "Vegetable Soup",
+    "description": "Hot and healthy vegetable soup made with seasonal veggies.",
+    "price": 180,
+    "image": "https://i.ibb.co.com/tww53sGt/vegetable-soup-500x375.jpg",
+    "category": "Soup",
+    "featured": false
+  },
+  {
+    "id": 6,
+    "name": "Chicken Biryani",
+    "description": "Traditional biryani cooked with basmati rice, chicken, and aromatic spices.",
+    "price": 280,
+    "image": "https://i.ibb.co.com/YFV9rD81/Chicken-Biryani-Recipe-500x500.jpg",
+    "category": "Rice",
+    "featured": true
+  },
+  {
+    "id": 7,
+    "name": "Fish Curry",
+    "description": "Spicy fish curry cooked with herbs and coconut milk.",
+    "price": 300,
+    "image": "https://i.ibb.co.com/rRB7ZTkJ/thumb-700-0-0-0-auto.jpg",
+    "category": "Curry",
+    "featured": false
+  },
+  {
+    "id": 8,
+    "name": "Egg Fried Rice",
+    "description": "Fried rice with egg, vegetables, and light soy sauce.",
+    "price": 220,
+    "image": "https://i.ibb.co.com/ZpZsHMf7/20230529-SEA-Egg-Fried-Rice-Amanda-Suarez-hero-c8d95fbf69314b318bc279159f582882",
+    "category": "Rice",
+    "featured": false
+  },
+  {
+    "id": 9,
+    "name": "Club Sandwich",
+    "description": "Triple-layer sandwich with chicken, cheese, and lettuce.",
+    "price": 260,
+    "image": "https://i.ibb.co.com/Mx5JYk9P/Classic-Club-Sandwich-FT-RECIPE0523-99327c9c87214026b9419b949ee13a9c",
+    "category": "Fast Food",
+    "featured": true
+  },
+  {
+    "id": 10,
+    "name": "Chocolate Cake",
+    "description": "Soft chocolate cake topped with fudge and cream.",
+    "price": 150,
+    "image": "https://i.ibb.co.com/23b8YLXP/images-9.jpg",
+    "category": "Dessert",
+    "featured": false
+  },
+  {
+    "id": 11,
+    "name": "Fruit Smoothie",
+    "description": "Refreshing smoothie made with mixed fruits and yogurt.",
+    "price": 130,
+    "image": "https://i.ibb.co.com/Z1MvG3Jv/images-10.jpg",
+    "category": "Beverage",
+    "featured": true
+  },
+  {
+    "id": 12,
+    "name": "Tandoori Chicken",
+    "description": "Charcoal-grilled chicken marinated with yogurt and Indian spices.",
+    "price": 350,
+    "image": "https://i.ibb.co.com/HfT8dkTp/fs-tandoori-chicken-hmjq-medium-Square-At3-X.jpg",
+    "category": "Grill",
+    "featured": true
+  }
+]

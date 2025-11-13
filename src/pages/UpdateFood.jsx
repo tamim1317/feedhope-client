@@ -1,87 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import FoodService from '../services/FoodService'; 
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
 
-function UpdateFood() {
-    const { foodId } = useParams(); 
-    const navigate = useNavigate();
+const UpdateFood = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [food, setFood] = useState({ name: "", description: "", quantity: "", price: "" });
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
-    const [food, setFood] = useState({
-        name: '',
-        quantity: '', 
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    // --- Fetch Food Data ---
-    useEffect(() => {
-        const fetchFood = async () => {
-            try {
-                const data = await FoodService.getFoodById(foodId);
-                setFood(data);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to load food details.');
-                setLoading(false);
-            }
-        };
-        fetchFood();
-    }, [foodId]);
-
-    // ---  Handle Input Changes ---
-    const handleChange = (e) => {
-        setFood({
-            ...food,
-            [e.target.name]: e.target.value,
-        });
+  // Fetch existing food data
+  useEffect(() => {
+    const fetchFood = async () => {
+      setFetching(true);
+      try {
+        const res = await axios.get(`http://localhost:5000/api/foods/${id}`);
+        setFood(res.data);
+      } catch (err) {
+        console.error(err);
+        toast.error("Error fetching food data.");
+      } finally {
+        setFetching(false);
+      }
     };
+    fetchFood();
+  }, [id]);
 
-    // --- Handle Form Submission ---
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await FoodService.updateFood(foodId, food);
-            alert('Food updated successfully!');
-            navigate('/foods');
-        } catch (err) {
-            setError('Failed to update food. Please try again.');
-        }
-    };
+  // Handle form update
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.put(`http://localhost:5000/api/foods/${id}`, food);
+      toast.success("Food updated successfully!");
+      navigate("/manage-my-foods"); // redirect to manage page
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update food.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (loading) return <div>Loading food details...</div>;
-    if (error) return <div>Error: {error}</div>;
+  if (fetching) return <p className="text-center py-10">Loading food details...</p>;
 
-    // --- Render the Form ---
-    return (
-        <div className="update-food-container">
-            <h2>Update Food Item</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Food Name:</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={food.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="quantity">Quantity:</label>
-                    <input
-                        type="number"
-                        id="quantity"
-                        name="quantity"
-                        value={food.quantity}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>  
-                <button type="submit">Save Changes</button>
-            </form>
-        </div>
-    );
+  return (
+    <div className="max-w-md mx-auto my-8 p-6 border rounded-xl shadow-lg bg-white">
+      <h2 className="text-2xl font-bold mb-6 text-center text-teal-700">Update Food</h2>
+      <form onSubmit={handleUpdate} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Food Name"
+          className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+          value={food.name}
+          onChange={(e) => setFood({ ...food, name: e.target.value })}
+          required
+        />
+        <textarea
+          placeholder="Description"
+          className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+          value={food.description}
+          onChange={(e) => setFood({ ...food, description: e.target.value })}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Quantity (e.g., 5 servings)"
+          className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+          value={food.quantity || ""}
+          onChange={(e) => setFood({ ...food, quantity: e.target.value })}
+        />
+        <input
+          type="number"
+          placeholder="Price (BDT)"
+          className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400"
+          value={food.price || ""}
+          onChange={(e) => setFood({ ...food, price: e.target.value })}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-12 bg-gradient-to-r from-teal-400 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:scale-105 transition-transform disabled:from-gray-400 disabled:to-gray-500"
+        >
+          {loading ? "Updating..." : "Update Food"}
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default UpdateFood;

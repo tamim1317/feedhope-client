@@ -1,128 +1,76 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { Link } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import { toast } from 'react-toastify';
+// src/pages/ManageMyFoods.jsx
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { useFetch } from "../hooks/useFetch";
 
 const ManageMyFoods = () => {
-    const { firebaseToken } = useAuth();
-    const [foods, setFoods] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const { user } = useAuth();
+  const [deletingId, setDeletingId] = useState(null);
 
-    // --- Data Fetching ---
-const fetchMyFoods = async () => {
-      setLoading(true);
-        try {
-            const data = await api(firebaseToken).get('/my-foods'); 
-            setFoods(data);
-            setError(null);
-        } catch (err) {
-            console.error("Fetch Error:", err);
-            setError('Failed to load your managed foods. Please log in again.');
-            setFoods([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const { data: foods, loading, error, refetch } = useFetch(
+    user ? `http://localhost:5000/api/foods/my-foods?userId=${user.uid}` : null
+  );
 
-    useEffect(() => {
-        if (firebaseToken) {
-            fetchMyFoods();
-        }
-    }, [firebaseToken]); 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this food?")) return;
 
-    // --- Delete Handler ---
-    const handleDelete = (id) => {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    // Send authenticated Delete
-                    await api(firebaseToken).delete(`/foods/${id}`);
-                    
-                    // Show success toast and update the list
-                    toast.success('Food item deleted successfully!');
-                    Swal.fire('Deleted!', 'Your food item has been deleted.', 'success');
-                    fetchMyFoods();
-                } catch (error) {
-                    console.error("Deletion Error:", error);
-                    toast.error('Failed to delete the food item.');
-                    Swal.fire('Error!', 'Failed to delete the food item.', 'error');
-                }
-            }
-        });
-    };
-
-    // --- Conditional Rendering ---
-    if (loading) {
-        return <div className="min-h-screen flex justify-center items-center"><LoadingSpinner /></div>;
+    try {
+      setDeletingId(id);
+      await axios.delete(`http://localhost:5000/api/foods/${id}`);
+      toast.success("Food deleted successfully");
+      setDeletingId(null);
+      refetch && refetch(); // only call if refetch exists
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete food");
+      setDeletingId(null);
     }
+  };
 
-    if (error) {
-        return <div className="text-center text-red-600 mt-10">{error}</div>;
-    }
+  if (!user) return <p className="text-center mt-10 text-red-500">Please log in to manage your foods</p>;
+  if (loading) return <LoadingSpinner />;
+  if (error) return <p className="text-center mt-10 text-red-500">Error loading your foods</p>;
+  if (!foods?.length) return <p className="text-center mt-10 text-gray-500">You have no foods added</p>;
 
-    if (foods.length === 0) {
-        return (
-            <div className="text-center p-10">
-                <h2 className="text-3xl font-semibold mb-4">No Foods Managed</h2>
-                <p className="text-gray-600">You haven't added any food items yet. <Link to="/add-food" className="text-indigo-600 hover:underline">Add one now!</Link></p>
+  return (
+    <div className="max-w-4xl mx-auto my-8">
+      <h2 className="text-2xl font-bold mb-6 text-teal-700">Manage My Foods</h2>
+      <ul className="space-y-4">
+        {foods.map((food) => (
+          <li
+            key={food._id}
+            className="border p-4 rounded-lg shadow-sm flex justify-between items-center bg-white hover:shadow-md transition"
+          >
+            <div>
+              <h3 className="font-semibold text-lg">{food.name}</h3>
+              <p className="text-gray-600">{food.description}</p>
             </div>
-        );
-    }
-
-return (
-  <div className="container mx-auto p-4 md:p-8">
-    <h1 className="text-4xl font-extrabold text-center mb-10 text-gray-800">Manage My Donated Foods ({foods.length})</h1>
-            
-    <div className="overflow-x-auto shadow-lg rounded-lg">
-        <table className="min-w-full bg-white">
-         <thead className="bg-gray-200">
-           <tr>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Name</th>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Quantity</th>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Status</th>
-            <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700">Actions</th>
-            </tr>
-         </thead>
-            <tbody>
-              {foods.map((food) => (
-                <tr key={food._id} className="border-t hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-800">{food.food_name}</td>
-                    <td className="py-3 px-4 text-gray-600">{food.food_quantity}</td>
-                    <td className="py-3 px-4">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${food.food_status === 'Available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                            {food.food_status}
-                    </span>
-                    </td>
-                       <td className="py-3 px-4 text-center space-x-2">
-            {/* Update Button */}
-                <Link to={`/update-food/${food._id}`} className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-3 rounded text-sm transition">
-                Update
-                </Link>
-                                    
-            {/* Delete Button */}
-              <button onClick={() => handleDelete(food._id)} className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded text-sm transition">
-                Delete
-                </button>
-                   </td>
-                </tr>
-               ))}
-           </tbody>
-        </table>
-      </div>
+            <div className="flex gap-2">
+              <Link
+                to={`/update-food/${food._id}`}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition"
+              >
+                Edit
+              </Link>
+              <button
+                className={`px-3 py-1 rounded text-white ${
+                  deletingId === food._id ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"
+                } transition`}
+                onClick={() => handleDelete(food._id)}
+                disabled={deletingId === food._id}
+              >
+                {deletingId === food._id ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
-   );
+  );
 };
 
 export default ManageMyFoods;
