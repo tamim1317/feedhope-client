@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base API URL for requests
-const API_URL = "http://localhost:5000/api/requests";
+const API_URL = "https://feedhope-server.vercel.app/api/requests";
 
 // Helper function to set Authorization header
 const getAuthHeaders = (token) => ({

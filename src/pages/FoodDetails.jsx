@@ -13,10 +13,12 @@ const FoodDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  console.log("id", id)
+
   useEffect(() => {
     const fetchFood = async () => {
       try {
-        const response = await axios.get("/foods.json"); // local JSON
+        const response = await axios.get("/foods.json");
         const found = response.data.find((item) => item.id === parseInt(id));
         if (!found) throw new Error("Food not found");
         setFood(found);

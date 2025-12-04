@@ -5,23 +5,35 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
+const url =`https://feedhope-server.vercel.app/api/foods`
 const AddFood = () => {
   const navigate = useNavigate();
-  const { getToken, user } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleAddFood = async (data) => {
+    if (!user) {
+      toast.error("You must be logged in to add food!");
+      return;
+    }
+
     setLoading(true);
     try {
-      const token = await getToken();
-      await axios.post("http://localhost:5000/api/foods", { ...data, userId: user?.uid }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Post the new food with userId
+      const result = await axios.post(
+        url,
+        { ...data, userId: user.uid },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      console.log("result", result)
+
       toast.success("Food added successfully!");
-      navigate("/available-foods");
+      navigate("/manage-my-foods");
       window.scrollTo(0, 0);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to add food. Please try again.");
     } finally {
       setLoading(false);

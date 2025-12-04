@@ -1,32 +1,36 @@
-// src/hooks/useFetch.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 export const useFetch = (url) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let isMounted = true; // memory leak avoid করার জন্য
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(url);
-        if (isMounted) setData(res.data);
-      } catch (err) {
-        if (isMounted) setError(err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
+  const fetchData = useCallback(async () => {
+    if (!url) return;
 
-    fetchData();
+    setLoading(true);
+    setError(null);
 
-    return () => {
-      isMounted = false; // cleanup
-    };
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true, // allow cookies if needed
+      });
+      setData(response.data);
+    } catch (err) {
+      console.error(err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   }, [url]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 };

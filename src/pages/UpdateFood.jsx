@@ -15,7 +15,10 @@ const UpdateFood = () => {
     const fetchFood = async () => {
       setFetching(true);
       try {
-        const res = await axios.get(`http://localhost:5000/api/foods/${id}`);
+        const res = await fetch(
+      `https://feedhope-server.vercel.app/api/foods/my-foods?userId=${userId}`,
+      { credentials: "include" }
+    );
         setFood(res.data);
       } catch (err) {
         console.error(err);
@@ -32,7 +35,7 @@ const UpdateFood = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put(`http://localhost:5000/api/foods/${id}`, food);
+      await axios.put(`https://feedhope-server.onrender.com/api/foods/${id}`, food);
       toast.success("Food updated successfully!");
       navigate("/manage-my-foods"); // redirect to manage page
     } catch (err) {

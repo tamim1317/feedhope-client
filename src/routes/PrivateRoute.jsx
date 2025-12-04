@@ -1,18 +1,9 @@
-import React, { useEffect } from 'react';
-import { Navigate, useLocation, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-toastify';
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const PrivateRoute = ({ requiredRole }) => {
+const PrivateRoute = () => {
   const { user, loading } = useAuth();
-  const location = useLocation();
-
-  useEffect(() => {
-    // Show toast if logged in but lacks the required role
-    if (user && requiredRole && user.role !== requiredRole) {
-      toast.warn("You do not have permission to access this page.");
-    }
-  }, [user, requiredRole]);
 
   if (loading) {
     return (
@@ -22,17 +13,8 @@ const PrivateRoute = ({ requiredRole }) => {
     );
   }
 
-  if (!user) {
-    // Not logged in → redirect to login
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
-  if (requiredRole && user.role !== requiredRole) {
-    // Logged in but does not have required role → redirect home
-    return <Navigate to="/" replace />;
-  }
-
-  // Authenticated and authorized
   return <Outlet />;
 };
 

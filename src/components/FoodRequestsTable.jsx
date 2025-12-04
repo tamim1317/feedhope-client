@@ -1,4 +1,3 @@
-import { fetchFoodRequests, updateRequestStatus } from "../services/api";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';

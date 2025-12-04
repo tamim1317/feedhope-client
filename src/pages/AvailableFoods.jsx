@@ -1,7 +1,6 @@
-// src/pages/AvailableFoods.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import useFetch from "../hooks/useFetch"; // ✅ default import
+import { useFetch } from "../hooks/useFetch";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const AvailableFoods = () => {

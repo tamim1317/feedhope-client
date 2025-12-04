@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import LoadingSpinner from "../components/LoadingSpinner"; // Optional spinner
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const FoodsList = () => {
   const [foods, setFoods] = useState([]);
@@ -24,7 +24,7 @@ const FoodsList = () => {
     fetchFoods();
   }, []);
 
-  if (loading) return <LoadingSpinner />; // Show spinner while loading
+  if (loading) return <LoadingSpinner />;
   if (error)
     return (
       <p className="text-center text-red-500 py-10 font-semibold">

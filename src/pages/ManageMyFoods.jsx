@@ -1,4 +1,3 @@
-// src/pages/ManageMyFoods.jsx
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -11,8 +10,9 @@ const ManageMyFoods = () => {
   const { user } = useAuth();
   const [deletingId, setDeletingId] = useState(null);
 
+  // Only fetch if user exists
   const { data: foods, loading, error, refetch } = useFetch(
-    user ? `http://localhost:5000/api/foods/my-foods?userId=${user.uid}` : null
+    user ? `https://feedhope-server.vercel.app/api/foods/my-foods?userId=${user.uid}` : null
   );
 
   const handleDelete = async (id) => {
@@ -20,10 +20,10 @@ const ManageMyFoods = () => {
 
     try {
       setDeletingId(id);
-      await axios.delete(`http://localhost:5000/api/foods/${id}`);
+      await axios.delete(`https://feedhope-server.vercel.app/api/foods/${id}`);
       toast.success("Food deleted successfully");
       setDeletingId(null);
-      refetch && refetch(); // only call if refetch exists
+      refetch(); // refresh foods after deletion
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete food");
@@ -31,10 +31,19 @@ const ManageMyFoods = () => {
     }
   };
 
-  if (!user) return <p className="text-center mt-10 text-red-500">Please log in to manage your foods</p>;
+  if (!user)
+    return <p className="text-center mt-10 text-red-500">Please log in to manage your foods</p>;
+
   if (loading) return <LoadingSpinner />;
-  if (error) return <p className="text-center mt-10 text-red-500">Error loading your foods</p>;
-  if (!foods?.length) return <p className="text-center mt-10 text-gray-500">You have no foods added</p>;
+  if (error)
+    return (
+      <p className="text-center mt-10 text-red-500">
+        Error loading your foods. Please try again later.
+      </p>
+    );
+
+  if (!foods?.length)
+    return <p className="text-center mt-10 text-gray-500">You have no foods added</p>;
 
   return (
     <div className="max-w-4xl mx-auto my-8">
